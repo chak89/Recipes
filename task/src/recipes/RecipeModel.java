@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.*;
+import java.time.LocalDateTime;
 
 
 @Data
@@ -14,6 +15,7 @@ import javax.validation.constraints.*;
 @Table(name = "recipeModel")
 public class RecipeModel {
 
+    //Ignore ID when returning json
     @JsonIgnore
     @Id
     @Column
@@ -23,6 +25,13 @@ public class RecipeModel {
     @Column
     @NotBlank
     private String name;
+
+    @Column
+    @NotBlank
+    private String category;
+
+    @Column
+    private LocalDateTime date;
 
     @Column
     @NotBlank
