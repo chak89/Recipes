@@ -46,7 +46,7 @@ public class WebSecurityConfigurerImpl extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
                 .mvcMatchers("/admin").hasRole("ADMIN")
-                .mvcMatchers("/api/register").permitAll()
+                .mvcMatchers("/api/register", "/actuator/shutdown").permitAll()
                 .mvcMatchers("/**").authenticated() // or .anyRequest().authenticated()
                 .and()
                 .csrf().disable() // disabling CSRF will allow sending POST request using Postman

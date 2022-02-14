@@ -3,6 +3,8 @@ package recipes.recipes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,7 +13,6 @@ import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 
 @RestController
 @Validated
@@ -29,15 +30,21 @@ public class RecipeController {
         if (recipeModel.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } else {
+            System.out.println("recipeModel:" + recipeModel.get());
             return new ResponseEntity<>(recipeModel.get(), HttpStatus.OK);
         }
     }
 
-
     //POST /api/recipe - receives a recipe as a JSON object and returns a JSON object with one id field
     @PostMapping("/api/recipe/new")
-    public ResponseEntity<IdResponse> postRecipe(@Valid @RequestBody RecipeModel recipe) {
+    public ResponseEntity<IdResponse> postRecipe(@AuthenticationPrincipal UserDetails userDetails, @Valid @RequestBody RecipeModel recipe) {
+
         System.out.printf("RecipeController() -> %s -> recipe:%s %n", "/api/recipe/new", recipe);
+        System.out.println("Currently logged in user: " + userDetails.getUsername());
+
+        //Set the author as currently logged-in user email
+        recipe.setAuthor(userDetails.getUsername());
+
         //CRUD operation, save the recipe to database
         int id = recipeService.saveRecipe(recipe);
         return new ResponseEntity<>(new IdResponse(id), HttpStatus.OK);
@@ -45,14 +52,34 @@ public class RecipeController {
 
     //DELETE a recipe with a specified id
     @DeleteMapping("/api/recipe/{id}")
-    public ResponseEntity<RecipeModel> deleteRecipe(@PathVariable int id) {
-        boolean removed = recipeService.deleteRecipe(id);
+    public ResponseEntity<RecipeModel> deleteRecipe(@AuthenticationPrincipal UserDetails userDetails, @PathVariable int id) {
 
-        if (removed) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        System.out.printf("RecipeController() -> %s -> recipe:%d %n", "@DeleteMapping /api/recipe/{id})", id);
+
+        //Get the email of currently logged-in user
+        String userEmail = userDetails.getUsername();
+
+        //Get recipe from database
+        Optional<RecipeModel> recipeModel = recipeService.getRecipe(id);
+
+        //Check if recipe is found
+        if (recipeModel.isEmpty()) {
+            System.out.println("No recipe found");
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        //Get author of the recipe
+        String recipeAuthor = recipeModel.get().getAuthor();
+
+        //Check if author of recipe is the same as currently logged-in user
+        if (!recipeAuthor.equals(userEmail)) {
+            System.out.println("Currently logged-in user and author of recipe do not match");
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        recipeService.deleteRecipe(id);
+        System.out.printf("Username: %s DELETED recipe: %s %n", userEmail, recipeModel.get());
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
 
@@ -61,16 +88,34 @@ public class RecipeController {
     //If a recipe with a specified id does not exist, the server should return 404 (Not found).
     //The server should respond with 400 (Bad Request) if a recipe doesn't follow the restrictions indicated above (all fields are required, string fields can't be blank, arrays should have at least one item);
     @PutMapping("/api/recipe/{id}")
-    public ResponseEntity<RecipeModel> putRecipe(@PathVariable int id, @Validated @RequestBody RecipeModel recipe) {
+    public ResponseEntity<RecipeModel> putRecipe(@AuthenticationPrincipal UserDetails userDetails, @PathVariable int id, @Validated @RequestBody RecipeModel recipe) {
 
+        System.out.printf("RecipeController() -> %s -> recipe:%d %n", "@PutMapping /api/recipe/{id})", id);
+
+        //Get the email of currently logged-in user
+        String userEmail = userDetails.getUsername();
+
+        //Get recipe from database
         Optional<RecipeModel> recipeModel = recipeService.getRecipe(id);
 
+        //Check if recipe is found
         if (recipeModel.isEmpty()) {
+            System.out.println("No recipe found");
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } else {
-            recipeService.updateRecipe(id, recipe);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
+
+        //Get author of the recipe
+        String recipeAuthor = recipeModel.get().getAuthor();
+
+        //Check if author of recipe is the same as currently logged-in user
+        if (!recipeAuthor.equals(userEmail)) {
+            System.out.println("Currently logged-in user and author of recipe do not match");
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        recipeService.updateRecipe(id, recipeAuthor, recipe);
+        System.out.printf("Username: %s UPDATED recipe: %s %n", userEmail, recipe);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
 
@@ -97,7 +142,7 @@ public class RecipeController {
         //Extract GET parameters as firstkey and firstValue
         Optional<String> firstKey = allParams.keySet().stream().findFirst();
         String firstValue = allParams.get(firstKey.get());
-        List<RecipeModel> result = recipeService.searchRecipe(firstKey.get(),firstValue);
+        List<RecipeModel> result = recipeService.searchRecipe(firstKey.get(), firstValue);
 
 
         //If query params do not exist.

@@ -2,7 +2,6 @@ package recipes.user;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
 import java.util.Collection;
 
 /*Used to store and transfer user information from the user store(h2 database) to Spring Security.
@@ -16,7 +15,6 @@ public class UserDetailsImpl implements UserDetails {
         this.email = user.getEmail();
         this.password = user.getPassword();
     }
-
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

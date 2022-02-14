@@ -32,20 +32,14 @@ public class RecipeService {
     }
 
     //Delete a recipe by ID
-    public boolean deleteRecipe(int id) {
-        Optional<RecipeModel> taskOptional = recipeRepository.findById(id);
-
-        if (taskOptional.isPresent()) {
-            recipeRepository.deleteById(id);
-            return true;
-        } else {
-            return false;
-        }
+    public void deleteRecipe(int id) {
+        recipeRepository.deleteById(id);
     }
 
     //Update an id with a modified recipe
-    public void updateRecipe(int id, RecipeModel recipeModel) {
+    public void updateRecipe(int id, String previousRecipeAuthor, RecipeModel recipeModel) {
         recipeModel.setId(id);
+        recipeModel.setAuthor(previousRecipeAuthor);
         recipeModel.setDate(LocalDateTime.now());
         recipeRepository.save(recipeModel);
     }

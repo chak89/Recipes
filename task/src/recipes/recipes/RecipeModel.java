@@ -7,8 +7,6 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import javax.validation.constraints.*;
 import java.time.LocalDateTime;
-import java.util.List;
-
 
 @Data
 @NoArgsConstructor
@@ -38,15 +36,6 @@ public class RecipeModel {
     @NotBlank
     private String description;
 
-//    @Column
-//    @NotEmpty
-//    private List<String> ingredients;
-//
-//    @Column
-//    @NotEmpty
-//    private List<String> directions;
-
-
     @Column
     @NotEmpty
     private String[] ingredients;
@@ -55,6 +44,9 @@ public class RecipeModel {
     @NotEmpty
     private String[] directions;
 
+    @Column
+    @JsonIgnore
+    private String author;
 }
 
 
