@@ -23,11 +23,12 @@ public class UserController {
 
     @PostMapping("/api/register")
     public ResponseEntity<Long> registerUser(@Validated @RequestBody UserModel user) {
-        System.out.printf("UserController() -> %s -> user:%s ", "/api/register%n", user);
+        System.out.printf("UserController() -> %s -> user:%s%n", "/api/register", user);
 
         //Check if a user with a specified email exist
         Optional<UserModel> returnedUser = userService.getUser(user.getEmail());
         if (returnedUser.isPresent()) {
+            System.out.println(user.getEmail() + " already exists in the database.");
             return new ResponseEntity<>(-1L,HttpStatus.BAD_REQUEST);
         }
 

@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.*;
-import java.time.LocalDateTime;
+
 
 @Data
 @NoArgsConstructor
@@ -22,10 +22,13 @@ public class UserModel {
     private long id;
 
     @Column
-    @NotBlank
+    @NotBlank(message = "Email is mandatory")
+    //@Email(message = "Email should be valid")
+    @EmailConstraint
     private String email;
 
     @Column
-    @NotBlank
+    @NotBlank(message = "Password is mandatory")
+    @Size(min = 8, message = "Password should contain at least 8 characters and shouldn't be blank")
     private String password;
 }
