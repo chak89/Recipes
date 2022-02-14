@@ -34,7 +34,7 @@ spring.datasource.url=jdbc:h2:file:{your chosen path}
 http://localhost:{port number}/h2
 ```
 
-## APIs:  
+## APIs
 ``POST /api/register`` receives a JSON object with two fields: email (string), and password (string). No authentication required.
 
 ``POST /api/recipe/new`` receives a recipe as a JSON object and returns a JSON object with one id field.
