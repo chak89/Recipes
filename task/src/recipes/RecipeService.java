@@ -14,13 +14,12 @@ public class RecipeService {
     @Autowired
     public RecipeService(RecipeRepository recipeRepository) {
         this.recipeRepository = recipeRepository;
-        System.out.println("Service Layer is created");
+        System.out.println("Recipe Service Layer is created");
     }
 
     //Return recipe with id
     public Optional<RecipeModel> getRecipe(int id) {
-        Optional<RecipeModel> recipeOptional = recipeRepository.findById(id);
-        return recipeOptional;
+        return recipeRepository.findById(id);
     }
 
     //Save recipe with and auto generate primary key
@@ -52,25 +51,23 @@ public class RecipeService {
     }
 
     //Search for recipe
-    public List<RecipeModel> searchRecipe(Map<String, String> queryParam) {
+    public List<RecipeModel> searchRecipe(String key, String value) {
 
-        Optional<String> firstKey = queryParam.keySet().stream().findFirst();
-        String firstValue = queryParam.get(firstKey.get());
-        List<RecipeModel> result = null;
+        List<RecipeModel> result;
 
-        if (firstKey.get().equals("category")) {
-            result = recipeRepository.findByCategoryIgnoreCase(firstValue);
-        } else if (firstKey.get().equals("name")) {
-            result = recipeRepository.findByNameContainingIgnoreCase(firstValue);
-        } else if(result == null) {
-            return result;
+        if (key.equals("category")) {
+            result = recipeRepository.findByCategoryIgnoreCase(value);
+        } else if (key.equals("name")) {
+            result = recipeRepository.findByNameContainingIgnoreCase(value);
+        } else {
+            return null;
         }
 
         //Date sorter, the newest first
         Comparator<RecipeModel> compareByDate = (RecipeModel r1, RecipeModel r2) ->
                 r2.getDate().compareTo(r1.getDate());
 
-        Collections.sort(result, compareByDate);
+        result.sort(compareByDate);
         return result;
     }
 }

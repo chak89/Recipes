@@ -8,9 +8,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -26,7 +23,7 @@ public class RecipeController {
     //GET /api/recipe -  returns a recipe with a specified id as a JSON object
     @GetMapping("/api/recipe/{id}")
     public ResponseEntity<RecipeModel> getRecipe(@PathVariable int id) {
-        System.out.println("GET 1");
+        System.out.printf("RecipeController() -> %s -> id:%d %n", "/api/recipe/{id}", id);
         Optional<RecipeModel> recipeModel = recipeService.getRecipe(id);
 
         if (recipeModel.isEmpty()) {
@@ -40,7 +37,7 @@ public class RecipeController {
     //POST /api/recipe - receives a recipe as a JSON object and returns a JSON object with one id field
     @PostMapping("/api/recipe/new")
     public ResponseEntity<IdResponse> postRecipe(@Valid @RequestBody RecipeModel recipe) {
-
+        System.out.printf("RecipeController() -> %s -> recipe:%s %n", "/api/recipe/new", recipe);
         //CRUD operation, save the recipe to database
         int id = recipeService.saveRecipe(recipe);
         return new ResponseEntity<>(new IdResponse(id), HttpStatus.OK);
@@ -71,7 +68,7 @@ public class RecipeController {
         if (recipeModel.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } else {
-            recipeService.updateRecipe(id,recipe);
+            recipeService.updateRecipe(id, recipe);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
     }
@@ -83,23 +80,33 @@ public class RecipeController {
     //If no recipes are found, the program should return an empty JSON array. If 0 parameters were passed, or more than 1, the server should return 400 (Bad Request).
     //The same response should follow if the specified parameters are not valid. If everything is correct, it should return 200 (Ok).
     @GetMapping("/api/recipe/search/")
-    public ResponseEntity<List<RecipeModel>> searchRecipe(@RequestParam Map<String,String> allParams){
+    public ResponseEntity<List<RecipeModel>> searchRecipe(@RequestParam Map<String, String> allParams) {
+        System.out.printf("RecipeController() -> %s -> allParams:%s%n", "/api/recipe/search/", allParams);
+        System.out.printf("allParams.size()%s%n", allParams.size());
 
         //Check that the query params aren't empty
         if (allParams.size() == 0) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        List<RecipeModel> result = recipeService.searchRecipe(allParams);
+        //Check that there is only one param
+        if (allParams.size() > 1) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        //Extract GET parameters as firstkey and firstValue
+        Optional<String> firstKey = allParams.keySet().stream().findFirst();
+        String firstValue = allParams.get(firstKey.get());
+        List<RecipeModel> result = recipeService.searchRecipe(firstKey.get(),firstValue);
+
 
         //If query params do not exist.
         if (result == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        return new ResponseEntity<>(result,HttpStatus.OK);
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
-
 
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -111,7 +118,7 @@ public class RecipeController {
 
 
 class IdResponse {
-    private int id;
+    private final int id;
 
     public IdResponse(int id) {
         this.id = id;
