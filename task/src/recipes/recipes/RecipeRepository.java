@@ -1,4 +1,4 @@
-package recipes;
+package recipes.recipes;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
@@ -8,7 +8,7 @@ import java.util.List;
 public interface RecipeRepository extends CrudRepository<RecipeModel, Integer> {
 
     //Find by category case-insensitive
-    public List<RecipeModel> findByCategoryIgnoreCase(String category);
+    List<RecipeModel> findByCategoryIgnoreCase(String category);
 
     //Find if name contains a string, case insensitive
     List<RecipeModel> findByNameContainingIgnoreCase(String name);

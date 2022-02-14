@@ -1,4 +1,4 @@
-package recipes;
+package recipes.recipes;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

@@ -1,4 +1,4 @@
-package recipes;
+package recipes.recipes;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
